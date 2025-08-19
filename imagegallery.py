@@ -10,7 +10,7 @@ import random
 USERNAME = "sukshender01"
 REPO = "imagegallery"
 BRANCH = "main"
-FOLDER = ""   # images are directly in repo root
+FOLDER = ""   # images are in repo root
 
 # GitHub API and raw URLs
 GITHUB_API_URL = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FOLDER}"
