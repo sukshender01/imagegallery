@@ -36,6 +36,18 @@ def fetch_github_images():
         st.error(f"Error fetching images: {e}")
         return []
 
+# Initialize slideshow index
+if "slide" not in st.session_state:
+    st.session_state["slide"] = 1
+
+# Sidebar controls
+st.sidebar.header("⚙️ Gallery Controls")
+
+# Refresh button
+if st.sidebar.button("🔄 Refresh Images"):
+    fetch_github_images.clear()   # Clear cache
+    st.rerun()  # Reload app to fetch updated images
+
 # Load images
 images = fetch_github_images()
 
@@ -43,8 +55,6 @@ if not images:
     st.warning("No images found in the GitHub directory.")
     st.stop()
 
-# Sidebar controls
-st.sidebar.header("⚙️ Gallery Controls")
 view_mode = st.sidebar.radio("Select View Mode", ["Gallery Grid", "Slideshow"])
 shuffle = st.sidebar.checkbox("Shuffle Images", value=False)
 
@@ -67,7 +77,17 @@ if view_mode == "Gallery Grid":
 # ------------------------------------------------------
 else:
     st.markdown("### ▶️ Slideshow Mode")
-    index = st.slider("Image", 1, len(images), 1, step=1)
+
+    # Get current index
+    index = st.session_state["slide"]
+
+    # Safety check for index
+    if index < 1:
+        index = 1
+    if index > len(images):
+        index = len(images)
+    st.session_state["slide"] = index
+
     img_name = images[index - 1]
     img_url = f"{RAW_BASE_URL}{img_name}"
 
@@ -75,14 +95,26 @@ else:
     response = requests.get(img_url)
     if response.status_code == 200:
         image = Image.open(BytesIO(response.content))
-        st.image(image, caption=img_name, use_container_width=True)
+
+        # Split image into clickable areas
+        left, center, right = st.columns([1, 6, 1])
+
+        with center:
+            st.image(image, caption=img_name, use_container_width=True)
+
+        # Clicking left/right to navigate
+        with left:
+            if st.button("⬅️", use_container_width=True):
+                st.session_state["slide"] = max(1, index - 1)
+                st.rerun()
+
+        with right:
+            if st.button("➡️", use_container_width=True):
+                st.session_state["slide"] = min(len(images), index + 1)
+                st.rerun()
+
+        # Download button below image
         st.download_button("⬇️ Download this image", response.content, file_name=img_name)
 
-    # Navigation buttons
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col1:
-        if st.button("⬅️ Previous", use_container_width=True):
-            st.session_state["slide"] = max(1, index - 1)
-    with col3:
-        if st.button("Next ➡️", use_container_width=True):
-            st.session_state["slide"] = min(len(images), index + 1)
+    # Slider navigation
+    st.session_state["slide"] = st.slider("Image", 1, len(images), index, step=1)
