@@ -10,7 +10,7 @@ import random
 USERNAME = "sukshender01"
 REPO = "imagegallery"
 BRANCH = "main"
-FOLDER = ""   # empty since images are in root
+FOLDER = ""   # images are directly in repo root
 
 # GitHub API and raw URLs
 GITHUB_API_URL = f"https://api.github.com/repos/{USERNAME}/{REPO}/contents/{FOLDER}"
@@ -58,7 +58,7 @@ if view_mode == "Gallery Grid":
     cols = st.columns(3)  # Display in 3 columns
     for i, img_name in enumerate(images):
         with cols[i % 3]:
-            img_url = f"{RAW_BASE_URL}/{img_name}"
+            img_url = f"{RAW_BASE_URL}{img_name}"
             st.image(img_url, caption=img_name, use_container_width=True)
             st.download_button("⬇️ Download", img_url, file_name=img_name)
 
@@ -69,7 +69,7 @@ else:
     st.markdown("### ▶️ Slideshow Mode")
     index = st.slider("Image", 1, len(images), 1, step=1)
     img_name = images[index - 1]
-    img_url = f"{RAW_BASE_URL}/{img_name}"
+    img_url = f"{RAW_BASE_URL}{img_name}"
 
     # Fetch & display
     response = requests.get(img_url)
